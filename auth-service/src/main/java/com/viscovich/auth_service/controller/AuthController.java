@@ -25,4 +25,9 @@ public class AuthController {
     public TokenDto login(@RequestBody AuthDto dto){
         return authService.login(dto);
     }
+
+    @PostMapping("/validate")
+    public Boolean validateToken(@RequestParam String token){
+        return authService.validate(token);
+    }
 }

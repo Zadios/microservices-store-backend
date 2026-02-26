@@ -38,4 +38,8 @@ public class AuthService {
             throw new RuntimeException("La contraseña es incorrecta");
         }
     }
+
+    public Boolean validate(String token){
+        return jwtProvider.validate(token);
+    }
 }
