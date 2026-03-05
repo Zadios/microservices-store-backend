@@ -1,50 +1,49 @@
-# Distributed Store System
+# Distributed Store System (Microservices & Security)
 
-This project is a microservices-based backend system designed for an e-commerce platform. It focuses on service decomposition, independent database management, and synchronous communication between modules.
+This project is a microservices-based backend system designed for an e-commerce platform. It focuses on service decomposition, centralized security, and an API Gateway architecture.
 
 ## System Architecture
 
-The system consists of three independent microservices:
+The system uses an **API Gateway** pattern as a single entry point, ensuring that all requests are authenticated before reaching the business logic.
 
+- **API Gateway (Port 8080):** Centralized entry point. Implements a custom **Reactive Global Filter** for JWT validation.
+- **Auth Service (Port 8083):** Manages user authentication, JWT generation, and token validation.
 - **Customer Service (Port 8081):** Manages user profiles and customer data.
 - **Product Service (Port 8082):** Handles product catalog and inventory stock management.
-- **Order Service (Port 8080):** Acts as an orchestrator. It processes purchase requests by communicating with both Customer and Product services to validate data and update stock levels.
+- **Order Service (Port 8084):** Processes purchase requests and orchestrates stock updates.
 
 
+
+## Key Features
+
+- **Centralized Security:** All requests to business services must include a valid Bearer Token validated at the Gateway.
+- **Service Independence:** Each module has its own lifecycle and database.
+- **Non-blocking Gateway:** Built with Spring Cloud Gateway and WebFlux for high performance.
 
 ## Tech Stack
 
 - **Java 21**
-- **Spring Boot 4.x**
+- **Spring Boot 3.4.x / 4.x**
+- **Spring Cloud Gateway** (Reactive)
+- **Spring Security & JWT**
 - **Spring Data JPA**
 - **MySQL** (Database-per-service pattern)
-- **RestTemplate** (Inter-service communication)
-- **SpringDoc OpenAPI** (API Documentation)
+- **WebClient** (Asynchronous inter-service communication)
 
 ## Setup and Installation
 
-1. **Database Setup:** Create the following schemas in your MySQL instance:
-    - `db_bs_customers`
-    - `db_bs_products`
-    - `db_bs_orders`
+1. **Database Setup:** Create the following schemas in MySQL:
+    - `db_bs_customers`, `db_bs_products`, `db_bs_orders`, `db_bs_auth`
 
-2. **Configuration:** Update the `application.properties` file in each service with your local database credentials.
+2. **Execution Order:**
+    1. **Auth Service** (Required for token generation)
+    2. **Business Services** (Customer, Product, Order)
+    3. **API Gateway** (The entry point)
 
-3. **Execution:** Run each service in the following order:
-    - Customer Service
-    - Product Service
-    - Order Service
+## How to Test
 
-## API Documentation
-
-Each service provides its own Swagger UI for endpoint testing:
-
-- Order Service: `http://localhost:8080/swagger-ui.html`
-- Customer Service: `http://localhost:8081/swagger-ui.html`
-- Product Service: `http://localhost:8082/swagger-ui.html`
-
-## Current Development Status
-
-- Service-to-service communication implemented.
-- Automatic stock reduction upon order placement.
-- Centralized exception handling.
+1. **Login:** Send a POST to `http://localhost:8080/auth/login` to get your JWT.
+2. **Authorized Request:** Use the token in the `Authorization` header as `Bearer <token>` to access:
+    - `http://localhost:8080/products/**`
+    - `http://localhost:8080/customers/**`
+    - `http://localhost:8080/orders/**`
